@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:provider/provider.dart';
 import 'bloc/barcode/barcode_bloc.dart';
 import 'models/barcode_item.dart';
 import 'repositories/barcode_repository.dart';
 import 'screens/home_screen.dart';
+import 'providers/theme_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
   Hive.registerAdapter(BarcodeItemAdapter());
   Hive.registerAdapter(BarcodeTypeAdapter());
-  runApp(MyApp());
+  runApp(
+    ChangeNotifierProvider(create: (_) => ThemeProvider(), child: MyApp()),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -21,11 +25,14 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     return MultiBlocProvider(
       providers: [
         BlocProvider<BarcodeBloc>(
-          create: (context) => BarcodeBloc(repository: repository)
-            ..add(LoadBarcodeHistory()),
+          create:
+              (context) =>
+                  BarcodeBloc(repository: repository)
+                    ..add(LoadBarcodeHistory()),
         ),
       ],
       child: MaterialApp(
@@ -39,6 +46,8 @@ class MyApp extends StatelessWidget {
             elevation: 1,
           ),
         ),
+        darkTheme: ThemeData.dark(),
+        themeMode: themeProvider.themeMode,
         home: HomeScreen(),
       ),
     );
