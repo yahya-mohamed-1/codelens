@@ -38,15 +38,14 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Professional Code Scanner',
         theme: ThemeData(
-          primarySwatch: Colors.blue,
+          colorSchemeSeed: themeProvider.accentColor,
           visualDensity: VisualDensity.adaptivePlatformDensity,
-          appBarTheme: AppBarTheme(
-            backgroundColor: Colors.white,
-            foregroundColor: Colors.black,
-            elevation: 1,
-          ),
+          appBarTheme: const AppBarTheme(elevation: 1),
         ),
-        darkTheme: ThemeData.dark(),
+        darkTheme: ThemeData(
+          brightness: Brightness.dark,
+          colorSchemeSeed: themeProvider.accentColor,
+        ),
         themeMode: themeProvider.themeMode,
         home: HomeScreen(),
       ),

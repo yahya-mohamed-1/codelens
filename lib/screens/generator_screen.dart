@@ -76,12 +76,19 @@ class _GeneratorScreenState extends State<GeneratorScreen> {
                 ),
               ),
             SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: _generateCode,
-              child: Text('Generate and Save'),
-              style: ElevatedButton.styleFrom(
-                padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-              ),
+            Builder(
+              builder: (context) {
+                final colorScheme = Theme.of(context).colorScheme;
+                return ElevatedButton(
+                  onPressed: _generateCode,
+                  child: Text('Generate and Save'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: colorScheme.primary,
+                    foregroundColor: colorScheme.onPrimary,
+                    padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                  ),
+                );
+              },
             ),
           ],
         ),

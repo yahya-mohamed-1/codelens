@@ -12,9 +12,15 @@ class HistoryScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text('History'),
         actions: [
-          IconButton(
-            icon: Icon(Icons.delete),
-            onPressed: () => _showClearHistoryDialog(context),
+          Builder(
+            builder: (context) {
+              final colorScheme = Theme.of(context).colorScheme;
+              return IconButton(
+                icon: Icon(Icons.delete),
+                color: colorScheme.primary,
+                onPressed: () => _showClearHistoryDialog(context),
+              );
+            },
           ),
         ],
       ),
@@ -22,11 +28,9 @@ class HistoryScreen extends StatelessWidget {
         builder: (context, state) {
           if (state is BarcodeHistoryLoaded) {
             final history = state.history;
-
             if (history.isEmpty) {
               return Center(child: Text('No history yet'));
             }
-
             return ListView.builder(
               itemCount: history.length,
               itemBuilder: (context, index) {
@@ -45,6 +49,7 @@ class HistoryScreen extends StatelessWidget {
   }
 
   Widget _buildHistoryItem(BuildContext context, model.BarcodeItem item) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Card(
       margin: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: ListTile(
@@ -81,10 +86,12 @@ class HistoryScreen extends StatelessWidget {
           children: [
             IconButton(
               icon: Icon(Icons.share, size: 20),
+              color: colorScheme.primary,
               onPressed: () => _shareBarcode(context, item),
             ),
             IconButton(
               icon: Icon(Icons.delete, size: 20),
+              color: colorScheme.primary,
               onPressed: () => _deleteItem(context, item),
             ),
           ],
@@ -156,23 +163,24 @@ class HistoryScreen extends StatelessWidget {
   void _deleteItem(BuildContext context, model.BarcodeItem item) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Delete Item'),
-        content: Text('Are you sure you want to delete this item?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Cancel'),
+      builder:
+          (context) => AlertDialog(
+            title: Text('Delete Item'),
+            content: Text('Are you sure you want to delete this item?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () {
+                  context.read<BarcodeBloc>().add(DeleteBarcode(item: item));
+                  Navigator.pop(context);
+                },
+                child: Text('Delete'),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () {
-              context.read<BarcodeBloc>().add(DeleteBarcode(item: item));
-              Navigator.pop(context);
-            },
-            child: Text('Delete'),
-          ),
-        ],
-      ),
     );
   }
 

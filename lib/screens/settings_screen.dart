@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import '../providers/theme_provider.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -93,11 +94,60 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         (mode) => themeProvider.setThemeMode(mode),
                       ),
                 ),
+                ListTile(
+                  leading: Icon(Icons.palette),
+                  title: Text('Accent Color'),
+                  subtitle: Text(
+                    '#${themeProvider.accentColor.value.toRadixString(16).padLeft(8, '0').toUpperCase()}',
+                  ),
+                  trailing: CircleAvatar(
+                    backgroundColor: themeProvider.accentColor,
+                  ),
+                  onTap: () => _showAccentColorPicker(context, themeProvider),
+                ),
               ],
             ),
           ),
         ],
       ),
+    );
+  }
+
+  void _showAccentColorPicker(
+    BuildContext context,
+    ThemeProvider themeProvider,
+  ) {
+    Color pickerColor = themeProvider.accentColor;
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: Text('Pick Accent Color'),
+            content: SingleChildScrollView(
+              child: ColorPicker(
+                pickerColor: pickerColor,
+                onColorChanged: (color) {
+                  pickerColor = color;
+                },
+                enableAlpha: false,
+                showLabel: true,
+                pickerAreaHeightPercent: 0.8,
+              ),
+            ),
+            actions: [
+              TextButton(
+                child: Text('Cancel'),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+              TextButton(
+                child: Text('Select'),
+                onPressed: () {
+                  themeProvider.setAccentColor(pickerColor);
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          ),
     );
   }
 }
