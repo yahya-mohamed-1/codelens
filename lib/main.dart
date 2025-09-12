@@ -32,6 +32,10 @@ class MyApp extends StatelessWidget {
         home: Scaffold(body: Center(child: CircularProgressIndicator())),
       );
     }
+    Color _getContrastingColor(Color color) {
+      return color.computeLuminance() > 0.5 ? Colors.black : Colors.white;
+    }
+
     return MultiBlocProvider(
       providers: [
         BlocProvider<BarcodeBloc>(
@@ -46,11 +50,26 @@ class MyApp extends StatelessWidget {
         theme: ThemeData(
           colorSchemeSeed: themeProvider.accentColor,
           visualDensity: VisualDensity.adaptivePlatformDensity,
-          appBarTheme: const AppBarTheme(elevation: 1),
+          appBarTheme: AppBarTheme(
+            backgroundColor: themeProvider.accentColor,
+            foregroundColor: _getContrastingColor(themeProvider.accentColor),
+            iconTheme: IconThemeData(
+              color: _getContrastingColor(themeProvider.accentColor),
+            ),
+            elevation: 1,
+          ),
         ),
         darkTheme: ThemeData(
           brightness: Brightness.dark,
           colorSchemeSeed: themeProvider.accentColor,
+          appBarTheme: AppBarTheme(
+            backgroundColor: themeProvider.accentColor,
+            foregroundColor: _getContrastingColor(themeProvider.accentColor),
+            iconTheme: IconThemeData(
+              color: _getContrastingColor(themeProvider.accentColor),
+            ),
+            elevation: 1,
+          ),
         ),
         themeMode: themeProvider.themeMode,
         home: HomeScreen(),

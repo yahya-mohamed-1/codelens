@@ -12,15 +12,9 @@ class HistoryScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text('History'),
         actions: [
-          Builder(
-            builder: (context) {
-              final colorScheme = Theme.of(context).colorScheme;
-              return IconButton(
-                icon: Icon(Icons.delete),
-                color: colorScheme.primary,
-                onPressed: () => _showClearHistoryDialog(context),
-              );
-            },
+          IconButton(
+            icon: Icon(Icons.delete),
+            onPressed: () => _showClearHistoryDialog(context),
           ),
         ],
       ),
