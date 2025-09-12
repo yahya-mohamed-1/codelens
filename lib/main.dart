@@ -47,6 +47,7 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp(
         title: 'Professional Code Scanner',
+        debugShowCheckedModeBanner: false,
         theme: ThemeData(
           colorSchemeSeed: themeProvider.accentColor,
           visualDensity: VisualDensity.adaptivePlatformDensity,
