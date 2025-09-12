@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:barcode_widget/barcode_widget.dart';
 import '../bloc/barcode/barcode_bloc.dart';
 import '../models/barcode_item.dart' as model;
+import '../models/barcode_type.dart';
 
 class GeneratorScreen extends StatefulWidget {
   @override
@@ -17,7 +18,16 @@ class _GeneratorScreenState extends State<GeneratorScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Generate Code')),
+      appBar: AppBar(
+        title: Text('Generate Code'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.info_outline),
+            onPressed: _showBarcodeInfo,
+            tooltip: 'Barcode Types Info',
+          ),
+        ],
+      ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16),
         child: Column(
@@ -33,13 +43,12 @@ class _GeneratorScreenState extends State<GeneratorScreen> {
             SizedBox(height: 16),
             DropdownButtonFormField<model.BarcodeType>(
               value: _selectedType,
-              items:
-                  model.BarcodeType.values.map((type) {
-                    return DropdownMenuItem<model.BarcodeType>(
-                      value: type,
-                      child: Text(_getBarcodeTypeName(type)),
-                    );
-                  }).toList(),
+              items: model.BarcodeType.values.map((type) {
+                return DropdownMenuItem<model.BarcodeType>(
+                  value: type,
+                  child: Text(_getBarcodeTypeName(type)),
+                );
+              }).toList(),
               onChanged: (value) {
                 setState(() => _selectedType = value!);
               },
@@ -58,22 +67,45 @@ class _GeneratorScreenState extends State<GeneratorScreen> {
             ),
             SizedBox(height: 24),
             if (_textController.text.isNotEmpty)
-              Container(
-                padding: EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: BarcodeWidget(
-                  barcode: _getBarcode(
-                    model.BarcodeType.values.firstWhere(
-                      (type) => type == _selectedType,
+              Builder(
+                builder: (context) {
+                  final data = _textController.text;
+                  if (!_validateInput(data, _selectedType)) {
+                    return Container(
+                      padding: EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.red.shade900,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      width: 200,
+                      height: 200,
+                      child: Center(
+                        child: Text(
+                          "Unable to encode \"$data\" to ${_getBarcodeTypeName(_selectedType).toUpperCase()} Barcode",
+                          style: TextStyle(color: Colors.yellow, fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    );
+                  }
+                  return Container(
+                    padding: EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey),
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                  ),
-                  data: _textController.text,
-                  width: 200,
-                  height: 200,
-                ),
+                    child: BarcodeWidget(
+                      barcode: _getBarcode(
+                        model.BarcodeType.values.firstWhere(
+                          (type) => type == _selectedType,
+                        ),
+                      ),
+                      data: data,
+                      width: 200,
+                      height: 200,
+                    ),
+                  );
+                },
               ),
             SizedBox(height: 24),
             Builder(
@@ -96,22 +128,77 @@ class _GeneratorScreenState extends State<GeneratorScreen> {
     );
   }
 
+  void _showBarcodeInfo() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Barcode Types Information'),
+          content: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: model.BarcodeType.values.map((type) {
+                final info = barcodeTypeInfoMap[_getBarcodeTypeName(type)];
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        info?.name ?? '',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      SizedBox(height: 4),
+                      Text(info?.description ?? ''),
+                    ],
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('Close'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  bool _validateInput(String data, model.BarcodeType type) {
+    final info = barcodeTypeInfoMap[_getBarcodeTypeName(type)];
+    if (info == null) return false;
+    return info.validate(data);
+  }
+
   void _generateCode() {
-    if (_textController.text.isEmpty) {
+    final data = _textController.text;
+    if (data.isEmpty) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Please enter some text')));
       return;
     }
 
+    if (!_validateInput(data, _selectedType)) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(
+          content: Text(
+              "Unable to encode '$data' to '${_getBarcodeTypeName(_selectedType)}' Barcode")));
+      return;
+    }
+
     try {
       context.read<BarcodeBloc>().add(
-        GenerateBarcode(
-          data: _textController.text,
-          type: _selectedType,
-          note: _note,
-        ),
-      );
+            GenerateBarcode(
+              data: data,
+              type: _selectedType,
+              note: _note,
+            ),
+          );
 
       ScaffoldMessenger.of(
         context,
@@ -139,7 +226,6 @@ class _GeneratorScreenState extends State<GeneratorScreen> {
         return Barcode.upcA();
       case model.BarcodeType.dataMatrix:
         return Barcode.dataMatrix();
-      // default removed as all cases are covered
     }
   }
 
