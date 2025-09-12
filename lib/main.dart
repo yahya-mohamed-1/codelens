@@ -21,11 +21,17 @@ void main() async {
 class MyApp extends StatelessWidget {
   final BarcodeRepository repository = BarcodeRepository();
 
-  MyApp({super.key});
+  MyApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
+    if (!themeProvider.isLoaded) {
+      // Show splash/loading until theme is loaded
+      return MaterialApp(
+        home: Scaffold(body: Center(child: CircularProgressIndicator())),
+      );
+    }
     return MultiBlocProvider(
       providers: [
         BlocProvider<BarcodeBloc>(
